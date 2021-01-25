@@ -1,0 +1,130 @@
+﻿@page "/"
+@inject GitHubApi GitHub
+
+<style>
+    .zoomable {
+        font-size: @zoomEm;
+    }
+</style>
+
+<TelerikSplitter Width="100%"
+                 Height="100%"
+                 Orientation="@SplitterOrientation.Vertical">
+    <SplitterPanes>
+        <SplitterPane Class="k-pane-flex" Collapsible="false">
+            <TelerikSplitter Height="100%">
+                <SplitterPanes>
+                    <SplitterPane Collapsible="true" Collapsed="true" Size="400px" Max="500px" Min="300px">
+                        <header>
+                            <h1>Files EdCharbeneau/BlazorFreeEbook</h1>
+                        </header>
+                        <TelerikTreeList Data="@docs" IdField="Sha" ParentIdField="ParentSha"
+                                         ItemsField="Tree" HasChildrenField="HasChildren" OnExpand="OnExpand">
+
+                            <TreeListColumns>
+                                <TreeListColumn Field="Path" Expandable="true" Width="50%"></TreeListColumn>
+                                <TreeListColumn Field="Size"></TreeListColumn>
+                                <TreeListColumn Field="Url" Title="Action">
+                                    <Template>
+                                        @{
+                                            var node = context as TreeNode;
+                                            if (node.Type == "blob")
+                                            {
+                                                <TelerikButton OnClick="@(_ => EditClicked(context as TreeNode))">Edit</TelerikButton>
+                                            }
+                                        }
+                                    </Template>
+                                </TreeListColumn>
+                            </TreeListColumns>
+                        </TelerikTreeList>
+                    </SplitterPane>
+
+                    <SplitterPane Collapsible="true">
+                        <header>
+                            <h1>Telerik Editor</h1>
+
+                        </header>
+                        <TelerikEditor @bind-Value="@HtmlState" Width="100%" Height="100%" />
+                    </SplitterPane>
+
+                    <SplitterPane Collapsible="true">
+                        <header>
+                            <h1>Markdown</h1>
+                            <TelerikSlider @bind-Value="zoom" Min="1" Max="5" LargeStep="1">
+                                <LabelTemplate>
+                                    <span class="label-template">@context.ToString() x</span>
+                                </LabelTemplate>
+                            </TelerikSlider>
+
+                        </header>
+                        <TelerikTextArea @bind-Value="@MdState" Width="100%" Class="zoomable" />
+
+                    </SplitterPane>
+
+                </SplitterPanes>
+            </TelerikSplitter>
+        </SplitterPane>
+
+        <SplitterPane Collapsible="true" Collapsed="true">
+            <header>
+                <h1>HTML</h1>
+            </header>
+            @HtmlState
+        </SplitterPane>
+    </SplitterPanes>
+</TelerikSplitter>
+
+@code {
+
+    int zoom = 1;
+    string zoomEm => $"{zoom}em";
+
+    List<TreeNode> docs;
+
+    string html;
+    string HtmlState
+    {
+        get { return html; }
+        set
+        {
+            md = value.ToMarkdown();
+            html = value;
+        }
+    }
+
+    string md;
+    string MdState
+    {
+        get { return md; }
+        set
+        {
+            md = value;
+            html = value.ToHtml();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        MdState = "# New File";
+
+        docs = await GitHub.GetProjectRootNodes("edcharbeneau", "BlazorBookExamples");
+
+    }
+
+    async Task OnExpand(TreeListExpandEventArgs args)
+    {
+        var item = args.Item as TreeNode;
+        if (item.HasChildren && !docs.Any(x => x.ParentSha == item.Sha))
+        {
+            var items = await GitHub.GetProjectNodes(item.Url);
+
+            docs.AddRange(items);
+        }
+    }
+
+    async Task EditClicked(TreeNode node)
+    {
+        MdState = await GitHub.GetFileResponseAsync(node.Url);
+    }
+
+} 
