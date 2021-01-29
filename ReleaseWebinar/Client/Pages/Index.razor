@@ -3,13 +3,6 @@
 @inject FileConverter FileConverter
 @using Telerik.Blazor.Components.Editor
 
-@*<style>
-            .zoomable {
-                font-size: @zoomEm;
-            }
-    </style>*@
-
-
 <TelerikSplitter Width="100%" Height="100%" Orientation="@SplitterOrientation.Vertical">
     <SplitterPanes>
         <!-- Horizontal Panes -->
@@ -44,7 +37,7 @@
                     <SplitterPane Collapsible="true">
                         <header>
                             <h1>Telerik Editor</h1>
-                            <button @onclick="ExportToPdf">Click me</button>
+                            <TelerikButton @onclick="ExportToPdf">Export PDF</TelerikButton>
                         </header>
                         <TelerikEditor @bind-Value="@HtmlState" Width="100%" Height="100%" Tools="@EditorToolSets.All" />
                     </SplitterPane>
