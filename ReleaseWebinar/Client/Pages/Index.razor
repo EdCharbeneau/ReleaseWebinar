@@ -1,16 +1,18 @@
 ﻿@page "/"
 @inject GitHubApi GitHub
+@inject FileConverter FileConverter
+@using Telerik.Blazor.Components.Editor
 
-<style>
-    .zoomable {
-        font-size: @zoomEm;
-    }
-</style>
+@*<style>
+            .zoomable {
+                font-size: @zoomEm;
+            }
+    </style>*@
 
-<TelerikSplitter Width="100%"
-                 Height="100%"
-                 Orientation="@SplitterOrientation.Vertical">
+
+<TelerikSplitter Width="100%" Height="100%" Orientation="@SplitterOrientation.Vertical">
     <SplitterPanes>
+        <!-- Horizontal Panes -->
         <SplitterPane Class="k-pane-flex" Collapsible="false">
             <TelerikSplitter Height="100%">
                 <SplitterPanes>
@@ -42,29 +44,21 @@
                     <SplitterPane Collapsible="true">
                         <header>
                             <h1>Telerik Editor</h1>
-
+                            <button @onclick="ExportToPdf">Click me</button>
                         </header>
-                        <TelerikEditor @bind-Value="@HtmlState" Width="100%" Height="100%" />
+                        <TelerikEditor @bind-Value="@HtmlState" Width="100%" Height="100%" Tools="@EditorToolSets.All" />
                     </SplitterPane>
+
 
                     <SplitterPane Collapsible="true">
                         <header>
                             <h1>Markdown</h1>
-                            <TelerikSlider @bind-Value="zoom" Min="1" Max="5" LargeStep="1">
-                                <LabelTemplate>
-                                    <span class="label-template">@context.ToString() x</span>
-                                </LabelTemplate>
-                            </TelerikSlider>
-
                         </header>
                         <TelerikTextArea @bind-Value="@MdState" Width="100%" Class="zoomable" />
-
                     </SplitterPane>
-
                 </SplitterPanes>
             </TelerikSplitter>
         </SplitterPane>
-
         <SplitterPane Collapsible="true" Collapsed="true">
             <header>
                 <h1>HTML</h1>
@@ -76,10 +70,12 @@
 
 @code {
 
-    int zoom = 1;
-    string zoomEm => $"{zoom}em";
+    async Task ExportToPdf()
+    {
+        // call the export service, it will discern the details based on the extension of the exported file we want
+        await FileConverter.ExportAndDownloadHtmlContent(HtmlState, $"EditorContent.pdf");
 
-    List<TreeNode> docs;
+    }
 
     string html;
     string HtmlState
@@ -106,10 +102,10 @@
     protected override async Task OnInitializedAsync()
     {
         MdState = "# New File";
-
         docs = await GitHub.GetProjectRootNodes("edcharbeneau", "BlazorBookExamples");
-
     }
+
+    List<TreeNode> docs;
 
     async Task OnExpand(TreeListExpandEventArgs args)
     {
@@ -126,5 +122,4 @@
     {
         MdState = await GitHub.GetFileResponseAsync(node.Url);
     }
-
 } 

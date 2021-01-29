@@ -17,6 +17,7 @@ namespace ReleaseWebinar.Client
             builder.Services.AddScoped<WeatherForecastService>();
             builder.Services.AddTelerikBlazor();
             builder.Services.AddSingleton<GitHubApi>();
+            builder.Services.AddSingleton<FileConverter>();
             await builder.Build().RunAsync();
         }
     }

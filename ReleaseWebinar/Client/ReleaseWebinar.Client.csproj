@@ -5,11 +5,20 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="MarkdownSharp" Version="2.0.5" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="5.0.0" PrivateAssets="all" />
-    <PackageReference Include="ReverseMarkdown" Version="3.14.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="5.0.2" PrivateAssets="all" />
+    <PackageReference Include="ReverseMarkdown" Version="3.16.0" />
     <PackageReference Include="System.Net.Http.Json" Version="5.0.0" />
-    <PackageReference Include="Telerik.UI.for.Blazor" Version="2.21.0" />
+    <PackageReference Include="Telerik.UI.for.Blazor" Version="2.21.1" />
+    <PackageReference Include="Telerik.Documents.Core" Version="2021.1.118" />
+    <PackageReference Include="Telerik.Documents.Fixed" Version="2021.1.118" />
+    <PackageReference Include="Telerik.Documents.Flow" Version="2021.1.118" />
+    <PackageReference Include="Telerik.Documents.Flow.FormatProviders.Pdf" Version="2021.1.118" />
+    <PackageReference Include="Telerik.Documents.Spreadsheet" Version="2021.1.118" />
+    <PackageReference Include="Telerik.Documents.Spreadsheet.FormatProviders.OpenXml" Version="2021.1.118" />
+    <PackageReference Include="Telerik.Documents.Spreadsheet.FormatProviders.Pdf" Version="2021.1.118" />
+    <PackageReference Include="Telerik.Documents.SpreadsheetStreaming" Version="2021.1.118" />
+    <PackageReference Include="Telerik.Zip" Version="2021.1.118" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Shared\ReleaseWebinar.Shared.csproj" />
