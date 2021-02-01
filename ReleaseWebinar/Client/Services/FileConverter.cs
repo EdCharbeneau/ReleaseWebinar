@@ -13,6 +13,7 @@ using Telerik.Windows.Documents.Flow.FormatProviders.Rtf;
 using Telerik.Windows.Documents.Flow.FormatProviders.Txt;
 using Telerik.Windows.Documents.Flow.Model;
 using Microsoft.JSInterop;
+using System.Net.Http;
 
 namespace ReleaseWebinar.Client
 {
@@ -20,6 +21,8 @@ namespace ReleaseWebinar.Client
     {
         //private IWebHostEnvironment Environment { get; set; }
         private IJSRuntime _js { get; set; }
+
+        private readonly HttpClient _http;
 
 
         /// <summary>
@@ -30,15 +33,14 @@ namespace ReleaseWebinar.Client
         /// <returns>Returns true if the operation succeeded, false if there was an exception</returns>
         public async Task<bool> ExportAndDownloadHtmlContent(string htmlContent, string fileName)
         {
+
+            RadFlowDocument document = CreateHtmlDocument(htmlContent);
             try
             {
-                // prepare a document with the HTML content that we can use for conversion
-                HtmlFormatProvider provider = new HtmlFormatProvider();
-                RadFlowDocument document = provider.Import(htmlContent);
-
                 // get the provider to export and then download the file
                 string mimeType;
                 IFormatProvider<RadFlowDocument> exportProvider = GetExportFormatProvider(fileName, out mimeType);
+
                 byte[] exportFileBytes = null;
                 using (MemoryStream ms = new MemoryStream())
                 {
@@ -51,9 +53,46 @@ namespace ReleaseWebinar.Client
             }
             catch (Exception ex)
             {
+                //'System.Net.WebClient is not supported on this platform. Use System.Net.Http.HttpClient instead.'
                 return false;
             }
             return true;
+        }
+
+        private RadFlowDocument CreateHtmlDocument(string htmlContent)
+        {
+            try
+            {
+
+
+                // prepare a document with the HTML content that we can use for conversion
+                HtmlFormatProvider provider = new();
+                HtmlImportSettings importSettings = new();
+
+                importSettings.LoadImageFromUri += async (s, e) =>
+                {
+                    // Load the data representing the resource  
+                    var httpResponse = await _http.GetAsync(e.Uri);
+                    byte[] data = null;
+                    if (httpResponse.IsSuccessStatusCode)
+                    {
+                        data = await httpResponse.Content.ReadAsByteArrayAsync();
+                    }
+                    if (data != null)
+                    {
+                        // Pass the loaded data to the arguments  
+                        string extension = e.Uri.Substring(e.Uri.Length - 3);
+                        e.SetImageInfo(data, extension);
+                    }
+                };
+                provider.ImportSettings = importSettings;
+                RadFlowDocument document = provider.Import(htmlContent);
+                return document;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -105,10 +144,11 @@ namespace ReleaseWebinar.Client
 
         // DI for the environment feature we need - path to the wwwroot folder to read the intial content,
         // and JS runtime for downloading the file to the browser
-        public FileConverter(/*IWebHostEnvironment env,*/ IJSRuntime js)
+        public FileConverter(IJSRuntime js, HttpClient httpClient)
         {
             /*Environment = env;*/
             _js = js;
+            _http = httpClient;
         }
     }
 
